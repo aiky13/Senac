@@ -1,1 +1,292 @@
-TESTE
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horário de Aulas - SENAC</title>
+    <!-- Adicionar o link do Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Estilo CSS */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #2c3e50; /* Cor do título */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        table th {
+            background-color: #3498db; /* Cor azul para o cabeçalho */
+            color: white;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #ecf0f1; /* Cor clara para linhas pares */
+        }
+
+        table tbody tr:hover {
+            background-color: #d5dbdb; /* Cor de destaque ao passar o mouse */
+        }
+
+        button {
+            padding: 8px 12px;
+            background-color: #3498db; /* Cor azul para os botões */
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #2980b9; /* Cor mais escura ao passar o mouse */
+        }
+
+        .form-container {
+            margin: 20px auto;
+            width: 50%;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .form-container input, .form-container select {
+            margin: 5px 0;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Estilo para os alertas */
+        .alert {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+	 <img src="C:\Users\Aluno\Downloads\Senac_logo.svg.png" style="width: 150px; margin: 20px auto; display: block;">
+        <h1>Horário de Aulas - SENAC</h1>
+        
+        <!-- Área para alertas -->
+        <div id="alert-container"></div>
+
+        <label for="turno-filtrar">Filtrar por Turno:</label>
+        <select id="turno-filtrar" onchange="filtrarPorTurno()">
+            <option value="Todos">Todos</option>
+            <option value="Matutino">Matutino</option>
+            <option value="Vespertino">Vespertino</option>
+            <option value="Noturno">Noturno</option>
+        </select>
+        
+        <table id="tabela-cursos">
+            <thead>
+                <tr>
+                    <th>Turma</th>
+                    <th>Curso</th>
+                    <th>Sala</th>
+                    <th>Horário</th>
+                    <th>Instrutor(a)</th>
+                    <th>Intervalo</th>
+                    <th>Turno</th>
+                    <th>Excluir</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Os dados serão carregados aqui pelo JavaScript -->
+            </tbody>
+        </table>
+        
+        <div class="form-container">
+            <h3>Adicionar Novo Curso</h3>
+            <input type="text" id="turma" placeholder="Turma">
+            <input type="text" id="curso" placeholder="Curso">
+            <input type="text" id="sala" placeholder="Sala">
+            <input type="text" id="horario" placeholder="Horário">
+            <input type="text" id="instrutor" placeholder="Instrutor(a)">
+            <input type="text" id="intervalo" placeholder="Intervalo">
+            
+            <label for="turno">Turno:</label>
+            <select id="turno">
+                <option value="Matutino">Matutino</option>
+                <option value="Vespertino">Vespertino</option>
+                <option value="Noturno">Noturno</option>
+            </select>
+
+            <button onclick="adicionarCurso()">Adicionar Curso</button>
+        </div>
+    </div>
+
+    <script>
+        // Dados iniciais dos cursos com turnos alterados
+        const cursos = [
+            {
+                turma: '2024.45.18',
+                curso: 'Técnico em Segurança do Trabalho',
+                sala: '15',
+                horario: '19:00 às 22:00',
+                instrutor: 'Nara',
+                intervalo: '20:30 às 20:50',
+                turno: 'Noturno'
+            },
+            {
+                turma: '2024.45.19',
+                curso: 'Técnico em Administração',
+                sala: '21',
+                horario: '19:00 às 22:00',
+                instrutor: 'Italo',
+                intervalo: '20:30 às 20:50',
+                turno: 'Noturno'
+            },
+            {
+                turma: '2024.45.20',
+                curso: 'Técnico em Informática',
+                sala: '25',
+                horario: '07:00 às 11:00',
+                instrutor: 'Reginaldo',
+                intervalo: '09:30 às 09:50',
+                turno: 'Matutino'
+            },
+            {
+                turma: '2024.45.21',
+                curso: 'Técnico em Logística',
+                sala: '19',
+                horario: '13:00 às 17:00',
+                instrutor: 'Marcos',
+                intervalo: '15:00 às 15:20',
+                turno: 'Vespertino'
+            }
+        ];
+
+        // Função para preencher a tabela com os dados
+        function carregarTabela() {
+            const tabelaCursos = document.querySelector('#tabela-cursos tbody');
+            tabelaCursos.innerHTML = ''; // Limpa a tabela antes de recarregar
+            cursos.forEach((curso, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${curso.turma}</td>
+                    <td>${curso.curso}</td>
+                    <td>${curso.sala}</td>
+                    <td>${curso.horario}</td>
+                    <td>${curso.instrutor}</td>
+                    <td>${curso.intervalo}</td>
+                    <td>${curso.turno}</td>
+                    <td><button onclick="excluirCurso(${index})">Excluir</button></td>
+                `;
+                tabelaCursos.appendChild(row);
+            });
+        }
+
+        // Função para filtrar os cursos por turno
+        function filtrarPorTurno() {
+            const turnoSelecionado = document.getElementById('turno-filtrar').value;
+            let cursosFiltrados = cursos;
+
+            if (turnoSelecionado !== "Todos") {
+                cursosFiltrados = cursos.filter(curso => curso.turno === turnoSelecionado);
+            }
+
+            const tabelaCursos = document.querySelector('#tabela-cursos tbody');
+            tabelaCursos.innerHTML = ''; // Limpa a tabela antes de recarregar
+            cursosFiltrados.forEach((curso, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${curso.turma}</td>
+                    <td>${curso.curso}</td>
+                    <td>${curso.sala}</td>
+                    <td>${curso.horario}</td>
+                    <td>${curso.instrutor}</td>
+                    <td>${curso.intervalo}</td>
+                    <td>${curso.turno}</td>
+                    <td><button onclick="excluirCurso(${index})">Excluir</button></td>
+                `;
+                tabelaCursos.appendChild(row);
+            });
+        }
+
+        // Função para adicionar um novo curso
+        function adicionarCurso() {
+            const turma = document.getElementById('turma').value;
+            const curso = document.getElementById('curso').value;
+            const sala = document.getElementById('sala').value;
+            const horario = document.getElementById('horario').value;
+            const instrutor = document.getElementById('instrutor').value;
+            const intervalo = document.getElementById('intervalo').value;
+            const turno = document.getElementById('turno').value;
+
+            if (turma && curso && sala && horario && instrutor && intervalo && turno) {
+                cursos.push({ turma, curso, sala, horario, instrutor, intervalo, turno });
+                carregarTabela();
+                // Exibir alerta de sucesso
+                exibirAlerta("Curso adicionado com sucesso!", "success");
+
+                // Limpar os campos do formulário
+                document.getElementById('turma').value = '';
+                document.getElementById('curso').value = '';
+                document.getElementById('sala').value = '';
+                document.getElementById('horario').value = '';
+                document.getElementById('instrutor').value = '';
+                document.getElementById('intervalo').value = '';
+                document.getElementById('turno').value = 'Matutino';
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        }
+
+        // Função para excluir um curso
+        function excluirCurso(index) {
+            cursos.splice(index, 1);
+            carregarTabela();
+
+            // Exibir alerta de sucesso
+            exibirAlerta("Curso excluído com sucesso!", "danger");
+        }
+
+        // Função para exibir alerta
+        function exibirAlerta(mensagem, tipo) {
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = alert alert-${tipo};
+            alert.textContent = mensagem;
+            alertContainer.appendChild(alert);
+
+            // Remover o alerta após 3 segundos
+            setTimeout(() => {
+                alert.remove();
+            }, 3000);
+        }
+
+        // Carregar a tabela ao iniciar a página
+        window.onload = carregarTabela;
+    </script>
+
+    <!-- Adicionar o script do Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
